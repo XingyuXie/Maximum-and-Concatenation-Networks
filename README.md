@@ -4,7 +4,7 @@
 
 This repository is for [Maximum-and-Concatenation Networks](https://arxiv.org/abs/2007.04630) (to appear in ICML 2020)
 
-By Xingyu Xie, Hao Kong, [Jianlong Wu](https://jlwu1992.github.io), [Guangcan Liu](http://web2.nuist.edu.cn:8080/jszy/Professor.aspx?id=1990) and [Zhouchen Lin](https://zhouchenlin.github.io/).
+By Xingyu Xie, Hao Kong, [Jianlong Wu](https://jlwu1992.github.io), [Guangcan Liu](https://scholar.google.com/citations?user=JIfH-5IAAAAJ) and [Zhouchen Lin](https://zhouchenlin.github.io/).
 
 
 For more details or questions, feel free to contact: 

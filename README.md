@@ -13,4 +13,4 @@ Xingyu Xie: xyxie@pku.edu.cn
 
 ### Note That, this version is for showing the implementation details of MCN blocks. The user can choose x_\hat{k} according to the performance.
 
-# If the loss becomes NAN, the user can adapt the initial value of adaptiveScalar in the MCN_block file.
+##### If the loss becomes NAN, the user can adapt the initial value of adaptiveScalar in the MCN_block file.

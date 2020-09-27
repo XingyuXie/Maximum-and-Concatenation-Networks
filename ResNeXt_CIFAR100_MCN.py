@@ -33,14 +33,14 @@ def main():
     parser = argparse.ArgumentParser(description="cifar-10 with PyTorch")
     # parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--lr', default=1e-2, type=float, help='learning rate')
-    #parser.add_argument('--lr_MCN', default=0.01, type=float, help='learning rate for MCN')
+    #parser.add_argument('--lr_MCN', default=1e-3, type=float, help='learning rate for MCN')
     # parser.add_argument('--epoch', default=300, type=int, help='number of epochs tp train for')
-    parser.add_argument('--epoch', default=290, type=int, help='number of epochs tp train for')
+    parser.add_argument('--epoch', default=300, type=int, help='number of epochs tp train for')
     parser.add_argument('--trainBatchSize', default=100, type=int, help='training batch size')
     parser.add_argument('--testBatchSize', default=100, type=int, help='testing batch size')
     parser.add_argument('--cuda', default=torch.cuda.is_available(), type=bool, help='whether cuda is in use')
     parser.add_argument('--momentum', type=float, default=0.9, help='Momentum.')
-    parser.add_argument('--decay', type=float, default=7e-4, help='Weight decay (L2 penalty).')
+    parser.add_argument('--decay', type=float, default=3.5e-3, help='Weight decay (L2 penalty).')
     args = parser.parse_args()
 
     solver = Solver(args)
@@ -147,11 +147,11 @@ class Solver(object):
         self.model = self.model.to(self.device)
 
         #self.optimizer = torch.optim.SGD([{'params': self.other_param, 'lr': self.lr},{'params': self.MCNparam, 'lr': self.lr_MCN},], 
-       #momentum = self.momentum ,weight_decay=self.weight_decay, nesterov=True)
+        #momentum = self.momentum ,weight_decay=self.weight_decay, nesterov=True)
         #self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         
         self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.lr, momentum = self.momentum ,weight_decay=self.weight_decay, nesterov=True)
-        self.scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer, milestones=np.linspace(20,280,15,dtype=np.int), gamma=0.75)
+        self.scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer, milestones=np.linspace(20,280,15,dtype=np.int), gamma=0.8)
         # self.scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer, milestones=[150, 225], gamma=0.1)
         # self.scheduler = optim.lr_scheduler.MultiStepLR(self.optimizer, milestones=[150, 225], gamma=0.1)
         self.criterion = nn.CrossEntropyLoss().to(self.device)

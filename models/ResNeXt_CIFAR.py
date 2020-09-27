@@ -1,14 +1,21 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 
-import torch
+""" 
+Creates a ResNeXt Model as defined in:
+
+Xie, S., Girshick, R., Dollár, P., Tu, Z., & He, K. (2016). 
+Aggregated residual transformations for deep neural networks. 
+arXiv preprint arXiv:1611.05431.
+
+"""
+
+__author__ = "Pau Rodríguez López, ISELAB, CVC-UAB"
+__email__ = "pau.rodri1@gmail.com"
+
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import init
-import pdb
-
-import models
-from models import MCN_block
 
 
 class ResNeXtBottleneck(nn.Module):
@@ -55,7 +62,7 @@ class ResNeXtBottleneck(nn.Module):
         return F.relu(residual + bottleneck, inplace=True)
 
 
-class CifarResNeXt_MCN(nn.Module):
+class CifarResNeXt(nn.Module):
     """
     ResNext optimized for the Cifar dataset, as specified in
     https://arxiv.org/pdf/1611.05431.pdf
@@ -71,7 +78,7 @@ class CifarResNeXt_MCN(nn.Module):
             base_width: base number of channels in each group.
             widen_factor: factor to adjust the channel dimensionality
         """
-        super(CifarResNeXt_MCN, self).__init__()
+        super(CifarResNeXt, self).__init__()
         self.cardinality = cardinality
         self.depth = depth
         self.block_depth = (self.depth - 2) // 9
@@ -86,24 +93,8 @@ class CifarResNeXt_MCN(nn.Module):
         self.stage_1 = self.block('stage_1', self.stages[0], self.stages[1], 1)
         self.stage_2 = self.block('stage_2', self.stages[1], self.stages[2], 2)
         self.stage_3 = self.block('stage_3', self.stages[2], self.stages[3], 2)
-        self.classifier = nn.Linear(2048, nlabels)
+        self.classifier = nn.Linear(self.stages[3], nlabels)
         init.kaiming_normal_(self.classifier.weight)
-
-
-        self.MCN_block1 = models.MCN_block(xs_dim=[256,512,1024], out_dim = [512, 1536], x_strides= [4,2,1], bn_pool_flag = True)
-        self.MCN_block2 = models.MCN_block(xs_dim=[256,1024,2048], out_dim = [512, 1536], x_strides= [8,2,2], bn_pool_flag = True)
-        #self.conv_final = nn.Conv2d(2048, 1024, kernel_size=3, stride = 2, padding=0)
-        # self.reduce_MCN = nn.Conv2d()
-        #self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.relu = nn.LeakyReLU(negative_slope=0.15, inplace=True)
-        
-        
-        #self.fc = nn.Linear(2048, nlabels)
-        self.avg = nn.AvgPool2d(kernel_size=4, stride=1)
-        #self.conv_x0_f1 = nn.Conv2d(1024, 512, kernel_size=3, padding=1, stride = 2)
-        #self.bn_2 = nn.BatchNorm2d(512)
-        #self.conv_x0_f2 = nn.Conv2d(512, 512, kernel_size=3, padding=0, stride = 1)
-
 
         for key in self.state_dict():
             if key.split('.')[-1] == 'weight':
@@ -139,45 +130,14 @@ class CifarResNeXt_MCN(nn.Module):
         return block
 
     def forward(self, x):
-        x = self.conv_1_3x3.forward(x) # 64 * 32 * 32
-        #x = F.relu(self.bn_1.forward(x), inplace=True)
-        x = self.relu(self.bn_1.forward(x))
-        x_0 = self.stage_1.forward(x) # 256 * 32 * 32
-        x_1 = self.stage_2.forward(x_0) # 512 * 16 * 16
-        x_2 = self.stage_3.forward(x_1)# 1024 * 8 * 8
+        x = self.conv_1_3x3.forward(x)
+        x = F.relu(self.bn_1.forward(x), inplace=True)
+        x = self.stage_1.forward(x)
+        x = self.stage_2.forward(x)
+        x = self.stage_3.forward(x)
         
         
-        #x_0 = x # 1024 * 8 * 8
         
-        #x_k = self.avg(x_0) # 1024 * 4 * 4
-        
-        #pdb.set_trace()
-        
-        x_kk= self.MCN_block1(x_0, x_1, x_2) # 2048 * 8 * 8
-        x_final = self.MCN_block2(x_0, x_2, x_kk) # 2048 * 4 * 4
-        #pdb.set_trace()     
-        x_final = self.avg(x_final) # 2048 * 1 * 1
-        #x_final = self.conv_final(x_final) # 1024 * 1 * 1
-        #x_final = self.relu(self.bn_2.forward(x_final)) # 512 * 1 * 1
-
-
-        #x0_final = self.conv_x0_f1(x_0) # 512 * 4 * 4
-        #x0_final = self.bn6(x0_final)   # 512 * 4 * 4
-        #x0_final = self.relu(x0_final)  # 512 * 4 * 4
-        #x0_final = self.conv_x0_f2(x0_final) # 512 * 2 * 2
-        
-        #x0_final = self.avg(x0_final)
-
-        #x_6 = torch.cat((x0_final, x_4), 1) # (512+2048) * 2 * 2
-        #x_6 = x_4
-        #avg_x_final = self.avg(x_final)  # (512+2048) * 1 * 1
-        #x_7 = self.pool(x_6)
-        x_final = x_final.view(x_final.size(0), -1)
-
-        return self.classifier(x_final)
-
-
-
-        # x = F.avg_pool2d(x, 8, 1)
-        # x = x.view(-1, self.stages[3])
-        # return self.classifier(x)
+        x = F.avg_pool2d(x, 8, 1)
+        x = x.view(-1, self.stages[3])
+        return self.classifier(x)

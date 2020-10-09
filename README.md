@@ -11,4 +11,4 @@ For more details or questions, feel free to contact:
 
 Xingyu Xie: xyxie@pku.edu.cn
 
-### Note That, this version is for showing the implementation details of MCN blocks. The user can choose x_\hat{k} according to the performance. More experiment code pieces are coming.
+##### Note That, this version is for showing the implementation details of MCN blocks. The user can choose x_\hat{k} according to the performance. More experiment code pieces are coming.
